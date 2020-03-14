@@ -1,15 +1,20 @@
 const express = require("express");
 const app = express();
 const path = require("path");
-const db = require("../db");
+const db = require("./db");
 
 app.use("/dist", express.static(path.join(__dirname, "..", "dist")));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // app.use("/assets", express.static(path.join(__dirname, "assets")));
 
 app.get("/", (req, res, next) => {
-  res.sendFile(path.join(__dirname, "..", "index.html"));
+  res.sendFile(path.join(__dirname, "index.html"));
 });
+
+require("./api")(app);
 
 app.use((req, res, next) => {
   next({
@@ -26,8 +31,10 @@ app.use((err, req, res, next) => {
 
 const port = process.env.PORT || 3000;
 
-db.sync().then(() => {
-  app.listen(port, () => {
-    console.log(`listening on port ${port}`);
-  });
-});
+db.sync()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`listening on port ${port}`);
+    });
+  })
+  .catch(error => console.error(error));

@@ -1,28 +1,33 @@
 const pg = require("pg");
-// const client = new pg.Client(
-//   process.env.DATABASE_URL || "postgres://localhost/acme_db"
-// );
+const client = new pg.Client(
+  process.env.DATABASE_URL || "postgres://localhost/junior_phase_project"
+);
 
-// client.connect();
+client.connect();
 
 const sync = async () => {
   const SQL = `
   CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-  DROP TABLE IF EXISTS school;
   DROP TABLE IF EXISTS student;
+  DROP TABLE IF EXISTS school;
+ 
   
 
   CREATE TABLE school(
     id UUID PRIMARY KEY default uuid_generate_v4(),
-    school_name VARCHAR(255) NOT NULL UNIQUE,
+    school_name VARCHAR(255) NOT NULL UNIQUE
     
 
   );
   CREATE TABLE student(
     id UUID PRIMARY KEY default uuid_generate_v4(),
+    student_name VARCHAR(30) NOT NULL,
     isEnrolled BOOLEAN default false,
-    schoolId UUID REFERENCE school(id) 
+    schoolId UUID REFERENCES school(id) 
     );
+
+  INSERT INTO school (school_name) VALUES ('Sandalwood');
+  INSERT INTO student (student_name) VALUES ('RJ Celestino');
 
   `;
   await client.query(SQL);
@@ -52,17 +57,26 @@ const deleteStudent = async id => {
   return response;
 };
 
-// const createSchool = async (animeId, peepsId) => {
-//   const SQL = `INSERT INTO sc(mal_id, "peepoId") VALUES($1, $2) RETURNING *`;
-//   const response = await client.query(SQL, [animeId, peepsId]);
-//   console.log(animeId, peepsId);
-//   return response;
-// };
+const createSchool = async schoolName => {
+  const SQL = `INSERT INTO school (school_name) VALUES($1) RETURNING *`;
+  const response = await client.query(SQL, [schoolName]);
+  console.log(schoolName);
+  return response;
+};
+
+const createStudent = async studentName => {
+  const SQL = `INSERT INTO student (student_name) VALUES($1) RETURNING *`;
+  const response = await client.query(SQL, [studentName]);
+  console.log(studentName);
+  return response;
+};
 
 module.exports = {
   sync,
   getSchool,
   getStudent,
   deleteSchool,
-  deleteStudent
+  deleteStudent,
+  createSchool,
+  createStudent
 };
